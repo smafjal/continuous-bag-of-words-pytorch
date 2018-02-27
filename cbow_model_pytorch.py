@@ -49,15 +49,10 @@ def train_cbow(data, unique_vocab, word_to_idx):
     
     for epoch in range(EPOCH):
         total_loss = 0
-        for context, target in data:
-            # print("con: ", context)
-            # print("tar: ", target)
-            
+        for context, target in data:            
             inp_var = Variable(torch.LongTensor([word_to_idx[word] for word in context]))
             target_var = Variable(torch.LongTensor([word_to_idx[target]]))
-            
-            # print(inp_var.shape, target_var.size())
-            
+                        
             cbow.zero_grad()
             log_prob = cbow(inp_var)
             loss = nll_loss(log_prob, target_var)
@@ -85,6 +80,7 @@ def test_cbow(cbow, unique_vocab, word_to_idx):
 
 def main():
     # content processed as context/target
+    # consider 2*CONTEXT_SIZE as context window where middle word as target
     data = list()
     for i in range(CONTEXT_SIZE, len(corpus_text) - CONTEXT_SIZE):
         data_context = list()
@@ -95,14 +91,18 @@ def main():
             data_context.append(corpus_text[i + j])
         data_target = corpus_text[i]
         data.append((data_context, data_target))
-    
-    print(data[:3])
-    
+ 
+    print("Some data: ",data[:3])
+
     unique_vocab = list(set(corpus_text))
+    
     # mapping to index
     word_to_idx = {w: i for i, w in enumerate(unique_vocab)}
+
+    # train model- changed global variable if needed
     cbow = train_cbow(data, unique_vocab, word_to_idx)
     
+    # get two words similarity
     test_cbow(cbow, unique_vocab, word_to_idx)
 
 
